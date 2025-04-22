@@ -1,0 +1,57 @@
+name: best_bakes
+description: "A new Flutter project."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  animate_do: ^4.2.0
+  animations: ^2.0.11
+  animated_text_kit: ^4.2.3
+  carousel_slider: ^5.0.0
+  font_awesome_flutter: ^10.8.0
+  icons_plus: ^5.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - asset/
+    - asset/photos/
+    - asset/photos/freshcreamcakes/
+    - asset/photos/juicesandshakes/
+    - asset/photos/gifthampersandsweetbox/
+    - asset/photos/snacks/
+    - asset/fonts/
+    - asset/photos/backgrnd1.jpg
+
+  fonts:
+    - family: PlayfairDisplay
+      fonts:
+        - asset: asset/fonts/PlayfairDisplay-Regular.ttf
+        - asset: asset/fonts/PlayfairDisplay-Bold.ttf
+          weight: 700
+
+    - family: Helvetica
+      fonts:
+        - asset: asset/fonts/Helvetica.ttf
+
+    - family: Quicksand
+      fonts:
+        - asset: asset/fonts/Quicksand-Regular.ttf
+        - asset: asset/fonts/Quicksand-Bold.ttf
+          weight: 700
+
+    - family: Mallong
+      fonts:
+        - asset: asset/fonts/Mallong-Regular.ttf

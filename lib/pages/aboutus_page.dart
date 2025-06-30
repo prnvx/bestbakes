@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'package:best_bakes/pages/productpreview_page.dart';
 import 'package:flutter/material.dart';
-import 'package:best_bakes/widgets/navbar.dart'; // ✅ Import Navbar
+import 'package:best_bakes/widgets/navbar.dart';
+import 'package:best_bakes/pages/homepage.dart';
+
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -42,10 +45,30 @@ class _AboutPageState extends State<AboutPage> {
     });
   }
 
-  // Callback function for handling nav item selection
   void _onNavItemSelected(String selectedItem) {
-    print("Selected Nav Item: $selectedItem");
-    // You can implement your actual navigation logic here
+    switch (selectedItem) {
+      case 'Home':
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+        break;
+      case 'About':
+        // Already on About page
+        break;
+      case 'Menu':
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ProductGalleryPage()),
+        );
+        break;
+      case 'Contact':
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage(initialSection: 'Contact')),
+        );
+        break;
+    }
   }
 
   @override
@@ -53,17 +76,14 @@ class _AboutPageState extends State<AboutPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // ✅ Global Background Image
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('asset/photos/backgrnd1.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
           ),
-
-          // ✅ Main Content with Scrolling and Auto-Hiding Navbar
           NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
               SliverAppBar(
@@ -71,8 +91,8 @@ class _AboutPageState extends State<AboutPage> {
                 elevation: 0,
                 expandedHeight: 80,
                 floating: true,
-                pinned: false, // ✅ Navbar hides when scrolling down
-                flexibleSpace: Navbar(onNavItemSelected: _onNavItemSelected), // ✅ Pass the callback here
+                pinned: false,
+                flexibleSpace: Navbar(onNavItemSelected: _onNavItemSelected),
               ),
             ],
             body: SingleChildScrollView(
@@ -91,8 +111,6 @@ class _AboutPageState extends State<AboutPage> {
                     ),
                   ),
                   const SizedBox(height: 40),
-
-                  // ✅ Master Baker Section
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -123,10 +141,7 @@ class _AboutPageState extends State<AboutPage> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 70),
-
-                  // ✅ Animated Sections
                   LayoutBuilder(
                     builder: (context, constraints) {
                       bool isLargeScreen = constraints.maxWidth > 800;
@@ -139,7 +154,6 @@ class _AboutPageState extends State<AboutPage> {
                             isLeftAligned: isLargeScreen,
                           ),
                           const SizedBox(height: 40),
-
                           _animatedImageSection(
                             title: "Our Passion",
                             description:
@@ -148,7 +162,6 @@ class _AboutPageState extends State<AboutPage> {
                             isLeftAligned: !isLargeScreen,
                           ),
                           const SizedBox(height: 40),
-
                           _animatedImageSection(
                             title: "Our Commitment",
                             description: "We uphold the highest standards...",
@@ -159,15 +172,9 @@ class _AboutPageState extends State<AboutPage> {
                       );
                     },
                   ),
-
                   const SizedBox(height: 60),
-
-                  // ✅ New "See How We Make It" Section
                   _messageFromFoundersSection(),
-
                   const SizedBox(height: 60),
-
-                  // ✅ Back Button
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
@@ -177,8 +184,7 @@ class _AboutPageState extends State<AboutPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 30, vertical: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                     ),
                     child: const Text(
                       "Back",
@@ -198,23 +204,20 @@ class _AboutPageState extends State<AboutPage> {
     );
   }
 
-  // ✅ "See How We Make It" Section
   Widget _messageFromFoundersSection() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 40),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2A38), // ✅ Dark background
+        color: const Color(0xFF1E2A38),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // ✅ Left Side: Text + Button
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ✅ Section Title
                 const Text(
                   "Message from Founders",
                   style: TextStyle(
@@ -225,8 +228,6 @@ class _AboutPageState extends State<AboutPage> {
                   ),
                 ),
                 const SizedBox(height: 10),
-
-                // ✅ Description
                 const Text(
                   "In our 'See How We Make It' video, we give you a glimpse into our bakery’s process. Watch as we transform fresh ingredients into delectable treats, showcasing the care and skill that make our pastries and bread exceptional.",
                   style: TextStyle(
@@ -236,8 +237,6 @@ class _AboutPageState extends State<AboutPage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // ✅ Play Button
                 Row(
                   children: [
                     Container(
@@ -267,17 +266,15 @@ class _AboutPageState extends State<AboutPage> {
               ],
             ),
           ),
-
-          // ✅ Right Side: Image with Classic Shape
           ClipRRect(
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(100),
               topRight: Radius.circular(30),
               bottomLeft: Radius.circular(30),
               bottomRight: Radius.circular(100),
             ),
             child: Image.asset(
-              "asset/photos/Screenshot 2025-03-11 113724.png", // ✅ Replace with actual founders' image
+              "asset/photos/Screenshot 2025-03-11 113724.png",
               width: 350,
               height: 450,
               fit: BoxFit.cover,
@@ -332,9 +329,7 @@ class _AboutPageState extends State<AboutPage> {
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
-          crossAxisAlignment: isLeftAligned
-              ? CrossAxisAlignment.start
-              : CrossAxisAlignment.end,
+          crossAxisAlignment: isLeftAligned ? CrossAxisAlignment.start : CrossAxisAlignment.end,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(

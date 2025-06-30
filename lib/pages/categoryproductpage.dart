@@ -1,6 +1,7 @@
 import 'package:best_bakes/widgets/productdetail.dart';
 import 'package:flutter/material.dart';
 import 'package:best_bakes/widgets/navbar.dart';
+import 'package:flutter/rendering.dart';
 
 class CategoryProductPage extends StatefulWidget {
   final String categoryName;
@@ -19,6 +20,7 @@ class CategoryProductPage extends StatefulWidget {
 class _CategoryProductPageState extends State<CategoryProductPage> {
   final ScrollController _scrollController = ScrollController();
   bool _showHeaderAndBackButton = true;
+  final Set<int> _hoveredIndices = {};
 
   @override
   void initState() {
@@ -106,7 +108,6 @@ class _CategoryProductPageState extends State<CategoryProductPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background Image
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -115,7 +116,6 @@ class _CategoryProductPageState extends State<CategoryProductPage> {
               ),
             ),
           ),
-          // Overlay
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -130,7 +130,6 @@ class _CategoryProductPageState extends State<CategoryProductPage> {
               ),
             ),
           ),
-          // Main Content
           NestedScrollView(
             controller: _scrollController,
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -149,7 +148,6 @@ class _CategoryProductPageState extends State<CategoryProductPage> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               child: Column(
                 children: [
-                  // Header with Back Arrow
                   AnimatedOpacity(
                     opacity: _showHeaderAndBackButton ? 1.0 : 0.0,
                     duration: const Duration(milliseconds: 300),
@@ -183,23 +181,36 @@ class _CategoryProductPageState extends State<CategoryProductPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Product Grid
                   Expanded(
                     child: GridView.builder(
                       controller: _scrollController,
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: products.length,
                       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: isWideScreen ? 480 : 250, // Adjust grid items based on screen size
+                        maxCrossAxisExtent: isWideScreen ? 480 : 250,
                         crossAxisSpacing: 20,
                         mainAxisSpacing: 20,
                         childAspectRatio: 1.5,
                       ),
                       itemBuilder: (context, index) {
-                        return _buildProductCard(
-                          context,
-                          products[index]['name']!,
-                          products[index]['image']!,
+                        final product = products[index];
+                        final isHovered = _hoveredIndices.contains(index);
+
+                        return MouseRegion(
+                          onEnter: (_) =>
+                              setState(() => _hoveredIndices.add(index)),
+                          onExit: (_) =>
+                              setState(() => _hoveredIndices.remove(index)),
+                          child: AnimatedScale(
+                            scale: isHovered ? 1.03 : 1.0,
+                            duration: const Duration(milliseconds: 200),
+                            curve: Curves.easeInOut,
+                            child: Hero(
+                              tag: '${product['image']}_${product['name']}',
+                              child: _buildProductCard(
+                                  context, product['name']!, product['image']!),
+                            ),
+                          ),
                         );
                       },
                     ),
@@ -213,85 +224,85 @@ class _CategoryProductPageState extends State<CategoryProductPage> {
     );
   }
 
-  // Product card that shows in the grid
   Widget _buildProductCard(BuildContext context, String name, String image) {
-    return InkWell(
-      onTap: () {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return ProductDetailPopup(name: name, image: image);
-          },
-        ).then((result) {
-          if (result == true) {
-            _showSnackBar(context);
-          }
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.25),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(18),
-              child: Image.asset(
-                image,
-                width: double.infinity,
-                height: double.infinity,
-                fit: BoxFit.cover,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          showDialog(
+            context: context,
+            builder: (context) => ProductDetailPopup(name: name, image: image),
+          ).then((result) {
+            if (result == true) {
+              _showSnackBar(context);
+            }
+          });
+        },
+        borderRadius: BorderRadius.circular(18),
+        splashColor: Colors.white.withOpacity(0.2),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.25),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
-            ),
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.6),
-                      Colors.transparent,
-                    ],
+            ],
+          ),
+          child: Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: Image.asset(
+                  image,
+                  width: double.infinity,
+                  height: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.6),
+                        Colors.transparent,
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            Positioned(
-              bottom: 15,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontFamily: 'Mallong',
-                    shadows: [
-                      Shadow(
-                        color: Colors.black45,
-                        offset: Offset(0, 2),
-                        blurRadius: 4,
-                      ),
-                    ],
+              Positioned(
+                bottom: 15,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontFamily: 'Mallong',
+                      shadows: [
+                        Shadow(
+                          color: Colors.black45,
+                          offset: Offset(0, 2),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -301,49 +312,148 @@ class _CategoryProductPageState extends State<CategoryProductPage> {
   List<Map<String, String>> _getCategoryProducts() {
     if (widget.categoryName == 'Fresh Cream Cakes') {
       return [
-        {'name': 'Chocolate Cake', 'image': 'asset/photos/freshcreamcakes/chocolatecake.jpg'},
-        {'name': 'Blueberry Cake', 'image': 'asset/photos/freshcreamcakes/blueberrycake.jpg'},
-        {'name': 'Coffee Delight Cake', 'image': 'asset/photos/freshcreamcakes/coffeedelightcake.jpg'},
-        {'name': 'Spanish Delight Cake', 'image': 'asset/photos/freshcreamcakes/spanishdelightcake.jpg'},
-        {'name': 'White Truffle Cake', 'image': 'asset/photos/freshcreamcakes/whitetrufflecake.jpg'},
-        {'name': 'Mango Cake', 'image': 'asset/photos/freshcreamcakes/mangocake.jpg'},
-        {'name': 'Dry Fruit Cake', 'image': 'asset/photos/freshcreamcakes/dryfruitcake.jpg'},
-        {'name': 'Red Velvet Cake', 'image': 'asset/photos/freshcreamcakes/redvelvet.jpg'},
+        {
+          'name': 'Chocolate Cake',
+          'image': 'asset/photos/freshcreamcakes/chocolatecake.jpg'
+        },
+        {
+          'name': 'Blueberry Cake',
+          'image': 'asset/photos/freshcreamcakes/blueberrycake.jpg'
+        },
+        {
+          'name': 'Coffee Delight Cake',
+          'image': 'asset/photos/freshcreamcakes/coffeedelightcake.jpg'
+        },
+        {
+          'name': 'Spanish Delight Cake',
+          'image': 'asset/photos/freshcreamcakes/spanishdelightcake.jpg'
+        },
+        {
+          'name': 'White Truffle Cake',
+          'image': 'asset/photos/freshcreamcakes/whitetrufflecake.jpg'
+        },
+        {
+          'name': 'Mango Cake',
+          'image': 'asset/photos/freshcreamcakes/mangocake.jpg'
+        },
+        {
+          'name': 'Dry Fruit Cake',
+          'image': 'asset/photos/freshcreamcakes/dryfruitcake.jpg'
+        },
+        {
+          'name': 'Red Velvet Cake',
+          'image': 'asset/photos/freshcreamcakes/redvelvet.jpg'
+        },
       ];
     } else if (widget.categoryName == 'Juices & Shakes') {
       return [
-        {'name': 'Chocolate Shake', 'image': 'asset/photos/juicesandshakes/chocolateshake.jpg'},
-        {'name': 'Mango Shake', 'image': 'asset/photos/juicesandshakes/mangoshake.jpg'},
-        {'name': 'Strawberry Shake', 'image': 'asset/photos/juicesandshakes/strawberryshake.jpg'},
-        {'name': 'Pineapple Juice', 'image': 'asset/photos/juicesandshakes/pineapplejuice.jpg'},
-        {'name': 'Orange Juice', 'image': 'asset/photos/juicesandshakes/orangejuice.jpg'},
-        {'name': 'Watermelon Juice', 'image': 'asset/photos/juicesandshakes/watermelonjuice.jpg'},
-        {'name': 'Apple Juice', 'image': 'asset/photos/juicesandshakes/applejuice.jpg'},
-        {'name': 'Sharjah Shake', 'image': 'asset/photos/juicesandshakes/sharjahshake.jpg'},
-        {'name': 'Pomegranate Juice', 'image': 'asset/photos/juicesandshakes/pomegranatejuice.jpg'},
-        {'name': 'Chikkoo Shake', 'image': 'asset/photos/juicesandshakes/chikkushake.jpg'},
-        {'name': 'Grape Juice', 'image': 'asset/photos/juicesandshakes/grapeshake.jpg'},
-        {'name': 'Avocado Shake', 'image': 'asset/photos/juicesandshakes/avocadoshake.jpg'},
-        {'name': 'Milk Shake', 'image': 'asset/photos/juicesandshakes/milkshake.jpg'},
-        {'name': 'Guava Juice', 'image': 'asset/photos/juicesandshakes/guavajuice.jpg'},
-        {'name': 'Mango Juice', 'image': 'asset/photos/juicesandshakes/mangojuice.jpg'},
+        {
+          'name': 'Chocolate Shake',
+          'image': 'asset/photos/juicesandshakes/chocolateshake.jpg'
+        },
+        {
+          'name': 'Mango Shake',
+          'image': 'asset/photos/juicesandshakes/mangoshake.jpg'
+        },
+        {
+          'name': 'Strawberry Shake',
+          'image': 'asset/photos/juicesandshakes/strawberryshake.jpg'
+        },
+        {
+          'name': 'Pineapple Juice',
+          'image': 'asset/photos/juicesandshakes/pineapplejuice.jpg'
+        },
+        {
+          'name': 'Orange Juice',
+          'image': 'asset/photos/juicesandshakes/orangejuice.jpg'
+        },
+        {
+          'name': 'Watermelon Juice',
+          'image': 'asset/photos/juicesandshakes/watermelonjuice.jpg'
+        },
+        {
+          'name': 'Apple Juice',
+          'image': 'asset/photos/juicesandshakes/applejuice.jpg'
+        },
+        {
+          'name': 'Sharjah Shake',
+          'image': 'asset/photos/juicesandshakes/sharjahshake.jpg'
+        },
+        {
+          'name': 'Pomegranate Juice',
+          'image': 'asset/photos/juicesandshakes/pomegranatejuice.jpg'
+        },
+        {
+          'name': 'Chikkoo Shake',
+          'image': 'asset/photos/juicesandshakes/chikkushake.jpg'
+        },
+        {
+          'name': 'Grape Juice',
+          'image': 'asset/photos/juicesandshakes/grapeshake.jpg'
+        },
+        {
+          'name': 'Avocado Shake',
+          'image': 'asset/photos/juicesandshakes/avocadoshake.jpg'
+        },
+        {
+          'name': 'Milk Shake',
+          'image': 'asset/photos/juicesandshakes/milkshake.jpg'
+        },
+        {
+          'name': 'Guava Juice',
+          'image': 'asset/photos/juicesandshakes/guavajuice.jpg'
+        },
+        {
+          'name': 'Mango Juice',
+          'image': 'asset/photos/juicesandshakes/mangojuice.jpg'
+        },
       ];
     } else if (widget.categoryName == 'Gift Hampers & Sweet Box') {
       return [
-        {'name': 'Birthday Sweet Box', 'image': 'asset/photos/gifthampersandsweetbox/birthdaysweetbox.jpg'},
-        {'name': 'Festival Gift Hamper', 'image': 'asset/photos/gifthampersandsweetbox/festivalsweetbox.jpg'},
-        {'name': 'Plum Cake Box', 'image': 'asset/photos/gifthampersandsweetbox/plumcakebox.jpg'},
-        {'name': 'Kerala Sweet Box', 'image': 'asset/photos/gifthampersandsweetbox/keralasweetbox.jpg'},
-        {'name': 'Diwali Gift Hamper', 'image': 'asset/photos/gifthampersandsweetbox/diwalisweetbox.jpg'},
-        {'name': 'Christmas Gift Box', 'image': 'asset/photos/gifthampersandsweetbox/christmascakebox.jpg'},
+        {
+          'name': 'Birthday Sweet Box',
+          'image': 'asset/photos/gifthampersandsweetbox/birthdaysweetbox.jpg'
+        },
+        {
+          'name': 'Festival Gift Hamper',
+          'image': 'asset/photos/gifthampersandsweetbox/festivalsweetbox.jpg'
+        },
+        {
+          'name': 'Plum Cake Box',
+          'image': 'asset/photos/gifthampersandsweetbox/plumcakebox.jpg'
+        },
+        {
+          'name': 'Kerala Sweet Box',
+          'image': 'asset/photos/gifthampersandsweetbox/keralasweetbox.jpg'
+        },
+        {
+          'name': 'Diwali Gift Hamper',
+          'image': 'asset/photos/gifthampersandsweetbox/diwalisweetbox.jpg'
+        },
+        {
+          'name': 'Christmas Gift Box',
+          'image': 'asset/photos/gifthampersandsweetbox/christmascakebox.jpg'
+        },
       ];
     } else if (widget.categoryName == 'Snacks') {
       return [
-        {'name': 'Chicken Burger', 'image': 'asset/photos/snacks/chickenburger.jpg'},
-        {'name': 'Veg Sandwich', 'image': 'asset/photos/snacks/vegsandwich.jpg'},
+        {
+          'name': 'Chicken Burger',
+          'image': 'asset/photos/snacks/chickenburger.jpg'
+        },
+        {
+          'name': 'Veg Sandwich',
+          'image': 'asset/photos/snacks/vegsandwich.jpg'
+        },
         {'name': 'Chicken Bun', 'image': 'asset/photos/snacks/chickenbun.jpg'},
-        {'name': 'Chicken Puffs', 'image': 'asset/photos/snacks/chickenpuffs.jpeg'},
-        {'name': 'Chicken Sandwich', 'image': 'asset/photos/snacks/chickensandwich.jpg'},
+        {
+          'name': 'Chicken Puffs',
+          'image': 'asset/photos/snacks/chickenpuffs.jpeg'
+        },
+        {
+          'name': 'Chicken Sandwich',
+          'image': 'asset/photos/snacks/chickensandwich.jpg'
+        },
         {'name': 'Custard Bun', 'image': 'asset/photos/snacks/custardbun.jpg'},
         {'name': 'Veg Burger', 'image': 'asset/photos/snacks/vegburger.jpg'},
         {'name': 'Egg Bun', 'image': 'asset/photos/snacks/eggbun.jpg'},

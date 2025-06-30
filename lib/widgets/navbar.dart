@@ -17,48 +17,46 @@ class _NavbarState extends State<Navbar> {
     "About",
     "Menu",
     "Contact",
-    "Categories", // Optional: this is for ProductGalleryPage
+    "Categories",
   ];
 
   @override
   Widget build(BuildContext context) {
-    // Detect screen size for responsive layout
     bool isMobile = MediaQuery.of(context).size.width < 600;
 
     return Container(
       height: 80,
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 50), // Adjust padding based on screen size
-      decoration: const BoxDecoration(
-        color: Colors.transparent,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 50),
+      decoration: const BoxDecoration(color: Colors.transparent),
       child: Row(
-        mainAxisAlignment: isMobile
-            ? MainAxisAlignment.center
-            : MainAxisAlignment.spaceBetween, // Center items for mobile
+        mainAxisAlignment:
+            isMobile ? MainAxisAlignment.start : MainAxisAlignment.spaceBetween,
         children: [
-          // Left: Logo and a few nav items (centered on mobile)
-          Row(
-            children: [
-              Image.asset(
-                'asset/photos/logo2-removebg-preview.png',
-                height: 60,
+          // Left: Hamburger icon or Logo
+          if (isMobile)
+            Builder(
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu, color: Colors.white, size: 28),
+                onPressed: () => Scaffold.of(context).openDrawer(),
               ),
-              if (!isMobile) const SizedBox(width: 40), // Only add space on large screens
-              if (!isMobile) ..._buildNavItems(["Home", "About"]), // Show some items on the left side
-            ],
-          ),
+            )
+          else
+            Row(
+              children: [
+                Image.asset(
+                  'asset/photos/logo2-removebg-preview.png',
+                  height: 60,
+                ),
+                const SizedBox(width: 40),
+                ..._buildNavItems(["Home", "About"]),
+              ],
+            ),
 
-          // Right: Rest of the nav items (centered on mobile)
-          if (!isMobile) ...[
+          // Right side (only for non-mobile)
+          if (!isMobile)
             Row(
               children: _buildNavItems(["Menu", "Contact"]),
             ),
-          ] else ...[
-            // On mobile, show all items in a column or stack (hamburger-style or simplified)
-            Column(
-              children: _buildNavItems(navItems),
-            ),
-          ]
         ],
       ),
     );

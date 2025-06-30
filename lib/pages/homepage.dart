@@ -29,7 +29,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _scrollController.addListener(_onScroll);
 
-    // Jump to section after frame render
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.initialSection != null) {
         _onNavItemSelected(widget.initialSection!);
@@ -40,15 +39,11 @@ class _HomePageState extends State<HomePage> {
   void _onScroll() {
     if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
       if (_showNavbar) {
-        setState(() {
-          _showNavbar = false;
-        });
+        setState(() => _showNavbar = false);
       }
     } else if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
       if (!_showNavbar) {
-        setState(() {
-          _showNavbar = true;
-        });
+        setState(() => _showNavbar = true);
       }
     }
   }
@@ -62,7 +57,7 @@ class _HomePageState extends State<HomePage> {
     };
 
     final targetKey = sectionMap[title];
-    if (targetKey != null) {
+    if (targetKey != null && targetKey.currentContext != null) {
       Scrollable.ensureVisible(
         targetKey.currentContext!,
         duration: const Duration(milliseconds: 500),
@@ -81,38 +76,74 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
+      drawer: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 800) {
+            return Drawer(
+              backgroundColor: Colors.black87,
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  DrawerHeader(
+                    decoration: const BoxDecoration(color: Colors.amber),
+                    child: Image.asset('asset/photos/logo2-removebg-preview.png'),
+                  ),
+                  ...["Home", "About", "Menu", "Contact"].map((item) {
+                    return ListTile(
+                      title: Text(
+                        item,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontFamily: 'Mallong',
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _onNavItemSelected(item);
+                      },
+                    );
+                  }),
+                ],
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      ),
       body: Stack(
         children: [
-          // Scrollable content
-          SingleChildScrollView(
-            controller: _scrollController,
-            child: Column(
-              children: [
-                // Hero Section
-                KeyedSubtree(
-                  key: _heroKey,
-                  child: const HeroSection(),
+          // ✅ Background image
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('asset/photos/backgrnd1.jpg'),
+                  fit: BoxFit.cover,
                 ),
-                // About Section
-                KeyedSubtree(
-                  key: _aboutKey,
-                  child: const AboutSection(),
-                ),
-                // Menu Section (Product Preview)
-                KeyedSubtree(
-                  key: _menuKey,
-                  child: const ProductPreview(),
-                ),
-                // Footer (Contact Section)
-                KeyedSubtree(
-                  key: _contactKey,
-                  child: const Footer(),
-                ),
-              ],
+              ),
             ),
           ),
 
-          // Navbar with scroll-based visibility
+          // ✅ Scrollable content
+          SingleChildScrollView(
+            controller: _scrollController,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height,
+              ),
+              child: Column(
+                children: [
+                  KeyedSubtree(key: _heroKey, child: const HeroSection()),
+                  KeyedSubtree(key: _aboutKey, child: const AboutSection()),
+                  KeyedSubtree(key: _menuKey, child: const ProductPreview()),
+                  KeyedSubtree(key: _contactKey, child: const Footer()),
+                ],
+              ),
+            ),
+          ),
+
+          // ✅ Responsive Navbar with scroll visibility
           LayoutBuilder(
             builder: (context, constraints) {
               bool isLargeScreen = constraints.maxWidth > 800;

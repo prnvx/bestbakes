@@ -1,6 +1,6 @@
-import 'package:best_bakes/pages/productpreview_page.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import '../pages/productpreview_page.dart';
 
 class ProductPreview extends StatelessWidget {
   const ProductPreview({super.key});
@@ -58,22 +58,23 @@ class ProductPreview extends StatelessWidget {
       },
     ];
 
-    // Get screen width to determine if it's mobile or desktop
     bool isMobile = MediaQuery.of(context).size.width < 600;
 
     return SizedBox(
-      height: 750, // Adjusted height for both mobile and desktop
+      height: 800,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 30, horizontal: isMobile ? 20 : 60), // Padding adjusted for mobile/desktop
+        padding: EdgeInsets.symmetric(
+          vertical: 30,
+          horizontal: isMobile ? 20 : 60,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Section Title
             RichText(
               text: const TextSpan(
                 text: 'Customer ',
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: 36,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Mallong',
                   color: Colors.white,
@@ -86,53 +87,53 @@ class ProductPreview extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 25),
-
-            // Horizontal Scrolling Products with Animation
-            SizedBox(
-              height: 350, // Increased height to avoid content being cut off
-              child: CarouselSlider(
-                options: CarouselOptions(
-                  height: 330, // Adjusted height to match product card
-                  autoPlay: true,
-                  autoPlayInterval: const Duration(seconds: 3),
-                  enlargeCenterPage: true,
-                  viewportFraction: isMobile ? 0.8 : 0.3, // Adjusted for mobile vs desktop
-                  enableInfiniteScroll: true,
-                ),
-                items: products.map((product) {
-                  return _productItem(
-                    context: context, // Pass context here
-                    imagePath: product['image']!,
-                    name: product['name']!,
-                    price: product['price']!,
-                    weight: product['weight']!,
-                  );
-                }).toList(),
-              ),
-            ),
-
             const SizedBox(height: 30),
 
-            // "View All" Button
+            // Product Carousel
+            CarouselSlider(
+              options: CarouselOptions(
+                height: 380,
+                autoPlay: true,
+                autoPlayInterval: const Duration(seconds: 4),
+                enlargeCenterPage: true,
+                viewportFraction: isMobile ? 0.85 : 0.28,
+                enableInfiniteScroll: true,
+              ),
+              items: products.map((product) {
+                return _productItem(
+                  context: context,
+                  imagePath: product['image']!,
+                  name: product['name']!,
+                  price: product['price']!,
+                  weight: product['weight']!,
+                );
+              }).toList(),
+            ),
+
+            const SizedBox(height: 40),
+
+            // View All Button
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ProductGalleryPage()),
+                  MaterialPageRoute(
+                      builder: (context) => const ProductGalleryPage()),
                 );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber,
+                elevation: 8,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
               ),
               child: const Text(
                 'View All',
                 style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 17,
                     fontWeight: FontWeight.bold,
                     color: Colors.black),
               ),
@@ -144,118 +145,231 @@ class ProductPreview extends StatelessWidget {
   }
 
   Widget _productItem({
-    required BuildContext context, // Pass context here
+    required BuildContext context,
     required String imagePath,
     required String name,
     required String price,
     required String weight,
   }) {
-    // Now `context` is available here
     bool isMobile = MediaQuery.of(context).size.width < 600;
 
     return Container(
-      width: isMobile ? 200 : 250, // Adjust width for mobile/desktop
-      height: 330, // Adjusted height to fit all elements properly
+      width: isMobile ? 240 : 270,
+      margin: const EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E1A2B), // Dark Blue Background
-        borderRadius: BorderRadius.circular(15),
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Product Image
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(15),
-              topRight: Radius.circular(15),
-            ),
-            child: Image.asset(
-              imagePath,
-              width: double.infinity,
-              height: 140, // Adjusted to fit content properly
-              fit: BoxFit.cover,
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 10, vertical: 8), // Reduced padding
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Product Price
-                Text(
-                  price,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.amber,
-                    fontFamily: 'Mallong',
-                  ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxHeight: 380, // match CarouselSlider height
+        ),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(18),
+                  topRight: Radius.circular(18),
                 ),
-                const SizedBox(height: 5),
-
-                // Product Name
-                Text(
-                  name,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontFamily: 'Mallong',
-                  ),
+                child: Image.asset(
+                  imagePath,
+                  width: double.infinity,
+                  height: 150,
+                  fit: BoxFit.cover,
                 ),
-                const SizedBox(height: 5),
-
-                // Product Weight
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Icon(Icons.scale, size: 16, color: Colors.grey),
-                    const SizedBox(width: 5),
                     Text(
-                      weight,
+                      price,
                       style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
+                        fontSize: 17,
+                        color: Colors.amber,
+                        fontWeight: FontWeight.bold,
                         fontFamily: 'Mallong',
                       ),
                     ),
+                    const SizedBox(height: 6),
+                    Text(
+                      name,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        fontFamily: 'Mallong',
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.scale, color: Colors.grey, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          weight,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                            fontFamily: 'Mallong',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 42,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          showProductDetailsDialog(
+                              context, imagePath, name, price, weight);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          elevation: 6,
+                          backgroundColor: Colors.amber,
+                        ),
+                        child: const Text(
+                          "Add",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    )
                   ],
                 ),
-                const SizedBox(height: 10),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-                // Add Button - Wrapped in SizedBox to prevent overflow
-                SizedBox(
-                  width: double.infinity,
-                  height: 40, // Fixed height to avoid stretching
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 8), // Reduced padding
+  void showProductDetailsDialog(
+    BuildContext context,
+    String imagePath,
+    String name,
+    String price,
+    String weight,
+  ) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: SingleChildScrollView(
+            child: Center(
+              child: Container(
+                width: 320,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.25),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
                     ),
-                    child: const Text(
-                      'Add',
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black),
-                    ),
-                  ),
+                  ],
                 ),
-              ],
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset(
+                        imagePath,
+                        width: double.infinity,
+                        height: 150,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Mallong',
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.attach_money,
+                            size: 18, color: Colors.amber),
+                        Text(
+                          price,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.amber,
+                          ),
+                        ),
+                        const SizedBox(width: 20),
+                        const Icon(Icons.scale, size: 16, color: Colors.grey),
+                        Text(
+                          weight,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text(
+                        "OK",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

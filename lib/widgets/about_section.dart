@@ -264,7 +264,7 @@ class _AboutSectionState extends State<AboutSection> {
               textAlign: isLeftAligned ? TextAlign.left : TextAlign.right,
               style: TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.w400,
+                fontWeight: FontWeight.w800,
                 fontFamily: 'Mallong',
                 color: textColor.withOpacity(0.9),
                 height: 1.5,

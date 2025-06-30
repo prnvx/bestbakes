@@ -1,7 +1,10 @@
+import 'package:best_bakes/pages/aboutus_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:best_bakes/widgets/navbar.dart';
 import 'package:best_bakes/pages/categoryproductpage.dart';
-import 'package:flutter/rendering.dart';
+import 'package:best_bakes/pages/homepage.dart';
+
 
 class ProductGalleryPage extends StatefulWidget {
   const ProductGalleryPage({super.key});
@@ -12,38 +15,41 @@ class ProductGalleryPage extends StatefulWidget {
 
 class _ProductGalleryPageState extends State<ProductGalleryPage> {
   final ScrollController _scrollController = ScrollController();
-  bool _showHeaderAndBackButton = true;
+  bool _showNavbar = true;
 
-  final GlobalKey _headerKey = GlobalKey();
-  final GlobalKey _categoriesKey = GlobalKey();
+  Map<String, bool> _isHovered = {};
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(() {
       final direction = _scrollController.position.userScrollDirection;
-      if (direction == ScrollDirection.reverse && _showHeaderAndBackButton) {
-        setState(() => _showHeaderAndBackButton = false);
-      } else if (direction == ScrollDirection.forward && !_showHeaderAndBackButton) {
-        setState(() => _showHeaderAndBackButton = true);
+      if (direction == ScrollDirection.reverse && _showNavbar) {
+        setState(() => _showNavbar = false);
+      } else if (direction == ScrollDirection.forward && !_showNavbar) {
+        setState(() => _showNavbar = true);
       }
     });
   }
 
   void _onNavItemSelected(String title) {
-    final sectionMap = {
-      "Home": _headerKey,
-      "Categories": _categoriesKey,
-    };
-
-    final targetKey = sectionMap[title];
-    if (targetKey != null) {
-      Scrollable.ensureVisible(
-        targetKey.currentContext!,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
+    if (title == "Home") {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } else if (title == "About") {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const AboutPage()),
+      );
+    } else if (title == "Contact") {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage(initialSection: 'Contact')),
       );
     }
+    // No action needed for "Menu" because we're already on ProductGalleryPage
   }
 
   @override
@@ -55,16 +61,61 @@ class _ProductGalleryPageState extends State<ProductGalleryPage> {
   @override
   Widget build(BuildContext context) {
     final categories = [
-      {'image': 'asset/photos/freshcreamcakes/chocolatecake.jpg', 'name': 'Fresh Cream Cakes'},
-      {'image': 'asset/photos/juicesandshakes/chocolateshake.jpg', 'name': 'Juices & Shakes'},
-      {'image': 'asset/photos/gifthampersandsweetbox/birthdaysweetbox.jpg', 'name': 'Gift Hampers & Sweet Box'},
-      {'image': 'asset/photos/snacks/chickenburger.jpg', 'name': 'Snacks'},
+      {
+        'image': 'asset/photos/freshcreamcakes/chocolatecake.jpg',
+        'name': 'Fresh Cream Cakes'
+      },
+      {
+        'image': 'asset/photos/juicesandshakes/chocolateshake.jpg',
+        'name': 'Juices & Shakes'
+      },
+      {
+        'image': 'asset/photos/gifthampersandsweetbox/birthdaysweetbox.jpg',
+        'name': 'Gift Hampers & Sweet Box'
+      },
+      {
+        'image': 'asset/photos/snacks/chickenburger.jpg',
+        'name': 'Snacks'
+      },
     ];
 
     return Scaffold(
+      drawer: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 800) {
+            return Drawer(
+              backgroundColor: Colors.black87,
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  DrawerHeader(
+                    child: Image.asset('asset/photos/logo2-removebg-preview.png'),
+                  ),
+                  ...["Home", "About", "Menu", "Contact"].map((item) {
+                    return ListTile(
+                      title: Text(
+                        item,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontFamily: 'Mallong',
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _onNavItemSelected(item);
+                      },
+                    );
+                  }),
+                ],
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      ),
       body: Stack(
         children: [
-          // Background Image
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -73,101 +124,84 @@ class _ProductGalleryPageState extends State<ProductGalleryPage> {
               ),
             ),
           ),
-          NestedScrollView(
+          CustomScrollView(
             controller: _scrollController,
-            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            slivers: [
               SliverAppBar(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
-                expandedHeight: 80,
                 floating: true,
                 pinned: true,
-                flexibleSpace: Navbar(
-                  onNavItemSelected: _onNavItemSelected,
+                toolbarHeight: 80,
+                flexibleSpace: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 300),
+                  opacity: _showNavbar ? 1.0 : 0.0,
+                  child: Navbar(onNavItemSelected: _onNavItemSelected),
                 ),
               ),
-            ],
-            body: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-              child: Column(
-                children: [
-                  AnimatedOpacity(
-                    opacity: _showHeaderAndBackButton ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 300),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.arrow_back_ios),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Browse By Category',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
                           color: Colors.white,
-                          iconSize: 24,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
+                          fontFamily: 'Mallong',
                         ),
-                        const Expanded(
-                          child: Center(
-                            child: Text(
-                              'Browse By Category',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontFamily: 'Mallong',
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 24),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Home/Top Section
-                  Container(
-                    key: _headerKey,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: const Text(
-                      'Welcome to the Product Gallery!',
-                      style: TextStyle(
-                        fontSize: 22,
-                        color: Colors.white,
-                        fontFamily: 'Mallong',
                       ),
-                    ),
-                  ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Welcome to the Product Gallery!',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.white70,
+                          fontFamily: 'Mallong',
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: (categories.length / 2).ceil(),
+                        itemBuilder: (context, index) {
+                          final first = categories[index * 2];
+                          final second = (index * 2 + 1 < categories.length)
+                              ? categories[index * 2 + 1]
+                              : null;
 
-                  // Categories Section with more space
-                  Expanded(
-                    child: Container(
-                      key: _categoriesKey,
-                      padding: const EdgeInsets.only(top: 20),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-
-                          return GridView.builder(
-                            itemCount: categories.length,
-                            padding: EdgeInsets.zero,
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 20,
-                              mainAxisSpacing: 20,
-                              childAspectRatio: 1.8,
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 24),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _categoryItem(
+                                    first['image']!,
+                                    first['name']!,
+                                  ),
+                                ),
+                                const SizedBox(width: 24),
+                                Expanded(
+                                  child: second != null
+                                      ? _categoryItem(second['image']!, second['name']!)
+                                      : const SizedBox(),
+                                ),
+                              ],
                             ),
-                            itemBuilder: (context, index) {
-                              final category = categories[index];
-                              return _categoryItem(category['image']!, category['name']!);
-                            },
                           );
                         },
                       ),
-                    ),
+                      const SizedBox(height: 60),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),
@@ -175,71 +209,116 @@ class _ProductGalleryPageState extends State<ProductGalleryPage> {
   }
 
   Widget _categoryItem(String imagePath, String name) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CategoryProductPage(
-              categoryName: name,
-              categoryImage: imagePath,
-            ),
-          ),
-        );
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
+    _isHovered.putIfAbsent(name, () => false);
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered[name] = true),
+      onExit: (_) => setState(() => _isHovered[name] = false),
+      child: AnimatedScale(
+        duration: const Duration(milliseconds: 250),
+        scale: _isHovered[name]! ? 1.03 : 1.0,
         curve: Curves.easeInOut,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.25),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(18),
-              child: Image.asset(
-                imagePath,
-                width: double.infinity,
-                height: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.6),
-                      Colors.transparent,
-                    ],
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(24),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(24),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CategoryProductPage(
+                    categoryName: name,
+                    categoryImage: imagePath,
                   ),
                 ),
+              );
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.05),
+                    blurRadius: 6,
+                    spreadRadius: 1,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
               ),
-            ),
-            Positioned(
-              left: 20,
-              bottom: 20,
-              child: Text(
-                name,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  fontFamily: 'Mallong',
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Stack(
+                  children: [
+                    Hero(
+                      tag: name,
+                      child: Image.asset(
+                        imagePath,
+                        width: double.infinity,
+                        height: 320,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.55),
+                              Colors.black.withOpacity(0.1),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.2),
+                            width: 1.0,
+                          ),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: 20,
+                      bottom: 20,
+                      child: Text(
+                        name,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontFamily: 'Mallong',
+                          shadows: [
+                            Shadow(
+                              color: Colors.black45,
+                              offset: Offset(1, 1),
+                              blurRadius: 3,
+                            ),
+                            Shadow(
+                              color: Colors.black38,
+                              offset: Offset(2, 2),
+                              blurRadius: 6,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
